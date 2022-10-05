@@ -3,19 +3,4 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
          version="5.0">
-
-    <data-source>
-        <name>java:app/myDS</name>
-        <class-name>org.postgresql.xa.PGXADataSource</class-name>
-        <server-name>pg.myserver.com</server-name>
-        <database-name>postgres</database-name>
-        <user>foo</user>
-        <password>bla</password>
-        <transactional>true</transactional>
-        <isolation-level>TRANSACTION_READ_COMMITTED</isolation-level>
-        <initial-pool-size>2</initial-pool-size>
-        <max-pool-size>10</max-pool-size>
-        <min-pool-size>5</min-pool-size>
-        <max-statements>0</max-statements>
-    </data-source>
 </web-app>

@@ -1,13 +1,13 @@
 package com.dyuvarov.coffers.dao;
 
 import com.dyuvarov.coffers.GoldAction;
+import com.dyuvarov.coffers.exception.EntitySaveException;
 import com.dyuvarov.coffers.model.GoldTransaction;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j;
 
-import java.awt.print.Pageable;
 import java.sql.*;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -62,24 +62,39 @@ public class GoldTransactionDAOJdbc implements GoldTransactionDAO{
     }
 
     @Override
-    public boolean save(GoldTransaction goldTransaction) {
-        String sql = "INSERT INTO coffers.transaction (date, clan_id, action, gold_before, gold_after, gold_change) " +
-                "VALUES (?, ?, ?, ?, ?, ?)";
+    public boolean create(GoldTransaction goldTransaction, Connection dbConnection) {
+        String sql = "INSERT INTO coffers.transaction (date, clan_id, action, gold_before, gold_after, gold_change, status, error_description) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         int insertedRowsCount = 0;
-        try (Connection connection = connectionProvider.getConnection()) {
-            PreparedStatement ps = connection.prepareStatement(sql);
+        try {
+            PreparedStatement ps = dbConnection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             ps.setTimestamp(1, Timestamp.valueOf(goldTransaction.getDate()));
             ps.setLong(2, goldTransaction.getClanId());
             ps.setString(3, goldTransaction.getAction().name());
             ps.setInt(4, goldTransaction.getGoldBefore());
             ps.setInt(5, goldTransaction.getGoldAfter());
             ps.setInt(6, goldTransaction.getGoldChange());
-
-            insertedRowsCount = ps.executeUpdate(sql);
+            ps.setString(7, goldTransaction.getStatus().name());
+            if(goldTransaction.getErrorDescription() == null) {
+                ps.setNull(8, JDBCType.VARCHAR.getVendorTypeNumber());
+            } else {
+                ps.setString(8, goldTransaction.getErrorDescription());
+            }
+            insertedRowsCount = ps.executeUpdate();
+            if (insertedRowsCount > 0) {
+                try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        goldTransaction.setId(generatedKeys.getLong(1));
+                    }
+                    else {
+                        throw new EntitySaveException("Bad gold transaction creation, no ID obtained.");
+                    }
+                }
+            }
         } catch (SQLException sqlException) {
-            log.error("Bad transaction save", sqlException);
+            log.error("Bad gold transaction save", sqlException);
+            throw new EntitySaveException("Bad gold transaction creation");
         }
-
         return insertedRowsCount > 0;
     }
 

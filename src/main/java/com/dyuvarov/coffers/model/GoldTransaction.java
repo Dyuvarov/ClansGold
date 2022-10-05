@@ -1,13 +1,14 @@
 package com.dyuvarov.coffers.model;
 
 import com.dyuvarov.coffers.GoldAction;
-import lombok.Getter;
-import lombok.Setter;
+import com.dyuvarov.coffers.TransactionStatus;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class GoldTransaction {
     private Long id;
 
@@ -22,4 +23,17 @@ public class GoldTransaction {
     private int goldAfter;
 
     private int goldChange;
+
+    private TransactionStatus status;
+
+    private String errorDescription;
+
+    public GoldTransaction(LocalDateTime date, long clanId, GoldAction action, int goldBefore, int goldAfter, int goldChange) {
+        this.date = date;
+        this.clanId = clanId;
+        this.action = action;
+        this.goldBefore = goldBefore;
+        this.goldAfter = goldAfter;
+        this.goldChange = goldChange;
+    }
 }

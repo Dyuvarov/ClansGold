@@ -2,7 +2,7 @@ package com.dyuvarov.coffers.dao;
 
 import com.dyuvarov.coffers.model.GoldTransaction;
 
-import java.awt.print.Pageable;
+import java.sql.Connection;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,5 +11,5 @@ public interface GoldTransactionDAO {
 
     List<GoldTransaction> findByClanPageable(long clanId, int pageNumber, int pageSize);
 
-    boolean save(GoldTransaction goldTransaction);
+    boolean create(GoldTransaction goldTransaction, Connection dbConnection);
 }

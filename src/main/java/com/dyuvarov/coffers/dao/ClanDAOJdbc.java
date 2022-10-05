@@ -1,9 +1,9 @@
 package com.dyuvarov.coffers.dao;
 
+import com.dyuvarov.coffers.exception.EntitySaveException;
 import com.dyuvarov.coffers.model.Clan;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j;
 
@@ -38,18 +38,19 @@ public class ClanDAOJdbc implements ClanDAO {
     }
 
     @Override
-    public boolean update(Clan clan) {
+    public boolean update(Clan clan, Connection dbConnection) {
         String sql = "UPDATE coffers.clan SET name=?, gold=? WHERE id=?";
 
         int updatedRowsCount = 0;
-        try(Connection connection = connectionProvider.getConnection()) {
-            PreparedStatement ps = connection.prepareStatement(sql);
+        try {
+            PreparedStatement ps = dbConnection.prepareStatement(sql);
             ps.setString(1, clan.getName());
             ps.setInt(2, clan.getGold());
             ps.setLong(3, clan.getId());
             updatedRowsCount = ps.executeUpdate();
         } catch (SQLException sqlException) {
             log.error("Bad clan update", sqlException);
+            throw new EntitySaveException("Bad clan update");
         }
         return updatedRowsCount > 0;
     }

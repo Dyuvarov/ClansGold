@@ -6,6 +6,8 @@ CREATE TABLE coffers.transaction (
     gold_before integer not null ,
     gold_after integer not null ,
     gold_change integer not null ,
+    status varchar not null ,
+    error_description varchar,
 
     constraint clan_fk foreign key (clan_id) references coffers.clan(id)
 );
