@@ -20,20 +20,17 @@ public class GoldTransaction {
 
     private int goldBefore;
 
-    private int goldAfter;
-
     private int goldChange;
 
     private TransactionStatus status;
 
     private String errorDescription;
 
-    public GoldTransaction(LocalDateTime date, long clanId, GoldAction action, int goldBefore, int goldAfter, int goldChange) {
+    public GoldTransaction(LocalDateTime date, long clanId, GoldAction action, int goldBefore, int goldChange) {
         this.date = date;
         this.clanId = clanId;
         this.action = action;
         this.goldBefore = goldBefore;
-        this.goldAfter = goldAfter;
         this.goldChange = goldChange;
     }
 }

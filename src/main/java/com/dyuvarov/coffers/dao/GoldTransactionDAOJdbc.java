@@ -1,6 +1,7 @@
 package com.dyuvarov.coffers.dao;
 
 import com.dyuvarov.coffers.GoldAction;
+import com.dyuvarov.coffers.TransactionStatus;
 import com.dyuvarov.coffers.exception.EntitySaveException;
 import com.dyuvarov.coffers.model.GoldTransaction;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -22,7 +23,8 @@ public class GoldTransactionDAOJdbc implements GoldTransactionDAO{
 
     @Override
     public Optional<GoldTransaction> findById(long id) {
-        String sql = "SELECT id, date, clan_id, action, gold_before, gold_after, gold_change FROM coffers.transaction WHERE id=?";
+        String sql = "SELECT id, date, clan_id, action, gold_before, gold_change, status, error_description" +
+                " FROM coffers.transaction WHERE id=?";
 
         GoldTransaction transaction = null;
         try (Connection connection = connectionProvider.getConnection()){
@@ -41,7 +43,7 @@ public class GoldTransactionDAOJdbc implements GoldTransactionDAO{
 
     @Override
     public List<GoldTransaction> findByClanPageable(long clanId, int pageNumber, int pageSize) {
-        String sql = "SELECT id, date, clan_id, action, gold_before, gold_after, gold_change " +
+        String sql = "SELECT id, date, clan_id, action, gold_before, gold_change, status, error_description " +
                 "FROM coffers.transaction " +
                 "WHERE id=?" +
                 "OFFSET ? LIMIT ?";
@@ -63,8 +65,8 @@ public class GoldTransactionDAOJdbc implements GoldTransactionDAO{
 
     @Override
     public boolean create(GoldTransaction goldTransaction, Connection dbConnection) {
-        String sql = "INSERT INTO coffers.transaction (date, clan_id, action, gold_before, gold_after, gold_change, status, error_description) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO coffers.transaction (date, clan_id, action, gold_before, gold_change, status, error_description) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
         int insertedRowsCount = 0;
         try {
             PreparedStatement ps = dbConnection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -72,13 +74,12 @@ public class GoldTransactionDAOJdbc implements GoldTransactionDAO{
             ps.setLong(2, goldTransaction.getClanId());
             ps.setString(3, goldTransaction.getAction().name());
             ps.setInt(4, goldTransaction.getGoldBefore());
-            ps.setInt(5, goldTransaction.getGoldAfter());
-            ps.setInt(6, goldTransaction.getGoldChange());
-            ps.setString(7, goldTransaction.getStatus().name());
+            ps.setInt(5, goldTransaction.getGoldChange());
+            ps.setString(6, goldTransaction.getStatus().name());
             if(goldTransaction.getErrorDescription() == null) {
-                ps.setNull(8, JDBCType.VARCHAR.getVendorTypeNumber());
+                ps.setNull(7, JDBCType.VARCHAR.getVendorTypeNumber());
             } else {
-                ps.setString(8, goldTransaction.getErrorDescription());
+                ps.setString(7, goldTransaction.getErrorDescription());
             }
             insertedRowsCount = ps.executeUpdate();
             if (insertedRowsCount > 0) {
@@ -116,8 +117,9 @@ public class GoldTransactionDAOJdbc implements GoldTransactionDAO{
         goldTransaction.setClanId(rs.getLong("clan_id"));
         goldTransaction.setAction(GoldAction.valueOf(rs.getString("action")));
         goldTransaction.setGoldBefore(rs.getInt("gold_before"));
-        goldTransaction.setGoldBefore(rs.getInt("gold_after"));
-        goldTransaction.setGoldBefore(rs.getInt("gold_change"));
+        goldTransaction.setGoldChange(rs.getInt("gold_change"));
+        goldTransaction.setStatus(TransactionStatus.valueOf(rs.getString("status")));
+        goldTransaction.setErrorDescription(rs.getString("error_description"));
 
         return goldTransaction;
     }

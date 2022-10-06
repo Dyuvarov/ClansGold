@@ -14,9 +14,6 @@ import java.sql.SQLException;
 @Log4j
 public class UserAddGoldTransactionDAOJdbc implements UserAddGoldTransactionDAO {
 
-    @Inject
-    JdbcConnectionProvider connectionProvider;
-
     @Override
     public boolean save(UserAddGoldTransaction transaction, Connection dbConnection) {
         String sql = "INSERT INTO coffers.user_coffer_gold_transaction (user_id, transaction_id) VALUES (?, ?)";

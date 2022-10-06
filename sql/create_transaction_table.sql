@@ -4,7 +4,6 @@ CREATE TABLE coffers.transaction (
     clan_id bigint not null,
     action varchar not null ,
     gold_before integer not null ,
-    gold_after integer not null ,
     gold_change integer not null ,
     status varchar not null ,
     error_description varchar,
