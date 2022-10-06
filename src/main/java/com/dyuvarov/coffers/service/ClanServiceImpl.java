@@ -43,7 +43,7 @@ public class ClanServiceImpl implements ClanService {
 
     @SneakyThrows
     @Override
-    public synchronized GoldTransaction addGold(long clanId, int gold) {
+    public synchronized GoldTransaction addGold(long clanId, int gold, GoldAction action) {
         Connection connection = jdbcConnectionProvider.getConnection();
         connection.setAutoCommit(false);
         connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
@@ -56,7 +56,7 @@ public class ClanServiceImpl implements ClanService {
         GoldTransaction goldTransaction = new GoldTransaction(
                 LocalDateTime.now(),
                 clanId,
-                GoldAction.USER_ADD,
+                action,
                 oldGold,
                 gold
         );

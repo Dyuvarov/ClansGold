@@ -1,6 +1,6 @@
 package com.dyuvarov.coffers.service;
 
-import com.dyuvarov.coffers.TransactionStatus;
+import com.dyuvarov.coffers.GoldAction;
 import com.dyuvarov.coffers.dao.JdbcConnectionProvider;
 import com.dyuvarov.coffers.dao.UserAddGoldTransactionDAO;
 import com.dyuvarov.coffers.exception.EntitySaveException;
@@ -15,7 +15,7 @@ import java.sql.Connection;
 
 @ApplicationScoped
 @Log4j
-public class UserAddGoldServiceImpl {
+public class UserAddGoldService {
 
     @Inject
     private ClanService clans;
@@ -28,12 +28,10 @@ public class UserAddGoldServiceImpl {
 
     @SneakyThrows
     public void addGoldToClan(long userId, long clanId, int gold) {
-        GoldTransaction goldTransaction;
-        goldTransaction = clans.addGold(clanId, gold);
+        GoldTransaction goldTransaction= clans.addGold(clanId, gold, GoldAction.USER_ADD);
 
         Connection connection = jdbcConnectionProvider.getConnection();
         connection.setAutoCommit(false);
-        connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
         UserAddGoldTransaction userTransaction = new UserAddGoldTransaction(
                 userId,
                 goldTransaction.getId()

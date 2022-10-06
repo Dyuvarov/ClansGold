@@ -1,5 +1,6 @@
 package com.dyuvarov.coffers.service;
 
+import com.dyuvarov.coffers.GoldAction;
 import com.dyuvarov.coffers.model.Clan;
 import com.dyuvarov.coffers.model.GoldTransaction;
 
@@ -11,5 +12,5 @@ public interface ClanService {
 
     boolean update(Clan clan, Connection dbConnection);
 
-    GoldTransaction addGold(long clanId, int gold);
+    GoldTransaction addGold(long clanId, int gold, GoldAction action);
 }

@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 
-class UserAddGoldServiceImplTest {
+class UserAddGoldServiceTest {
 
 
     @Test
@@ -21,10 +21,17 @@ class UserAddGoldServiceImplTest {
                 .uri(new URI("http://localhost:8080/coffers/api/useraddgold?userId=1&clanId=3&gold=10"))
                 .POST(HttpRequest.BodyPublishers.noBody())
                 .build();
+        HttpRequest taskRequest = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:8080/coffers/api/task/complete?taskId=1&clanId=3"))
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .build();
         HttpClient client = HttpClient.newHttpClient();
         List<CompletableFuture<?>> l = new LinkedList<>();
-            for (int i = 0; i < 100; ++i) {
+        for (int i = 0; i < 100; ++i) {
             l.add(client.sendAsync(request, HttpResponse.BodyHandlers.ofString()));
+        }
+        for (int i = 0; i < 100; ++i) {
+            l.add(client.sendAsync(taskRequest, HttpResponse.BodyHandlers.ofString()));
         }
         for (CompletableFuture<?> cf : l) {
             cf.join();

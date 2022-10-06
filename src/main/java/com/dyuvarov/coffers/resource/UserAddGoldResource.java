@@ -1,7 +1,7 @@
 package com.dyuvarov.coffers.resource;
 
 import com.dyuvarov.coffers.exception.NegativeBalanceException;
-import com.dyuvarov.coffers.service.UserAddGoldServiceImpl;
+import com.dyuvarov.coffers.service.UserAddGoldService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -11,7 +11,7 @@ import jakarta.ws.rs.core.Response;
 @Path("/useraddgold")
 public class UserAddGoldResource {
     @Inject
-    private UserAddGoldServiceImpl addGoldService;
+    private UserAddGoldService addGoldService;
 
     @POST
     public Response addGold(@QueryParam("userId") long userId,
