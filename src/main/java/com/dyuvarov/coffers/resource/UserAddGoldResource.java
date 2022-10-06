@@ -1,5 +1,6 @@
 package com.dyuvarov.coffers.resource;
 
+import com.dyuvarov.coffers.exception.NegativeBalanceException;
 import com.dyuvarov.coffers.service.UserAddGoldServiceImpl;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
@@ -20,7 +21,10 @@ public class UserAddGoldResource {
         try {
             addGoldService.addGoldToClan(userId, clanId, gold);
             response = Response.ok().build();
-        } catch (Exception e) {
+        } catch (NegativeBalanceException e) {
+            response = Response.status(400, e.getMessage()).build();
+        }
+        catch (Exception e) {
             response = Response.serverError().build();
         }
         return response;
