@@ -2,6 +2,7 @@ package com.dyuvarov.coffers.model;
 
 import lombok.Getter;
 
+/** Additional info about add gold by task */
 @Getter
 public class TaskAddGoldTransaction {
     private Long id;

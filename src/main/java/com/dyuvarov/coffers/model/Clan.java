@@ -3,16 +3,16 @@ package com.dyuvarov.coffers.model;
 import lombok.Getter;
 import lombok.Setter;
 
-/** Клан */
+/** Clan */
 @Getter
 @Setter
 public class Clan {
-    /** id клана */
+    /** clan id */
     private Long id;
 
-    /** имя клана */
+    /** clan name */
     private String name; //
 
-    /** текущее количество золота в казне клана */
+    /** current gold */
     private int gold;
 }

@@ -13,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
 
+/** JDBC implementation of ClanDAO */
 @Log4j
 @ApplicationScoped
 public class ClanDAOJdbc implements ClanDAO {

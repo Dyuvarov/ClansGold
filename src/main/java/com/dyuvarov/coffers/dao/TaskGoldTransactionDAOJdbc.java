@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+/** JDBC implementation of TaskAddGoldTransactionDAO */
 @Log4j
 @ApplicationScoped
 public class TaskGoldTransactionDAOJdbc implements TaskAddGoldTransactionDAO{

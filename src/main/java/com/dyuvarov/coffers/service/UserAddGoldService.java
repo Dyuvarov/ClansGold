@@ -1,6 +1,6 @@
 package com.dyuvarov.coffers.service;
 
-import com.dyuvarov.coffers.GoldAction;
+import com.dyuvarov.coffers.type.GoldAction;
 import com.dyuvarov.coffers.dao.JdbcConnectionProvider;
 import com.dyuvarov.coffers.dao.UserAddGoldTransactionDAO;
 import com.dyuvarov.coffers.exception.EntitySaveException;
@@ -26,6 +26,7 @@ public class UserAddGoldService {
     @Inject
     private JdbcConnectionProvider jdbcConnectionProvider;
 
+    /** Add gold in clan`s coffer by user*/
     @SneakyThrows
     public void addGoldToClan(long userId, long clanId, int gold) {
         GoldTransaction goldTransaction= clans.addGold(clanId, gold, GoldAction.USER_ADD);

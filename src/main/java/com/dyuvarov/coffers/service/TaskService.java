@@ -1,6 +1,6 @@
 package com.dyuvarov.coffers.service;
 
-import com.dyuvarov.coffers.GoldAction;
+import com.dyuvarov.coffers.type.GoldAction;
 import com.dyuvarov.coffers.dao.JdbcConnectionProvider;
 import com.dyuvarov.coffers.dao.TaskAddGoldTransactionDAO;
 import com.dyuvarov.coffers.exception.EntitySaveException;
@@ -27,6 +27,7 @@ public class TaskService {
     @Inject
     private TaskAddGoldTransactionDAO taskAddGoldTransactionDAO;
 
+    /** find single task by id */
     public Task findById(long taskId) {
         if (taskId == 1) {
             return Task.successTack;
@@ -36,6 +37,7 @@ public class TaskService {
         throw new EntityNotFoundException();
     }
 
+    /** Logic on task complete  */
     public void completeTask(long clanId, long taskId) {
         Task task = findById(taskId);
 
@@ -44,6 +46,7 @@ public class TaskService {
         }
     }
 
+    /** add gold in clan`s coffer */
     @SneakyThrows
     private void addGoldToClan(long clanId, long taskId, int gold) {
         GoldTransaction goldTransaction = clans.addGold(clanId, gold, GoldAction.TASK);

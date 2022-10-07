@@ -1,0 +1,22 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:13.3
+    environment:
+      POSTGRES_DB: "postgres"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+
+  wildfly:
+    build: .
+    ports:
+      - "8080:8080"
+      - "9990:9990"
+    restart: always
+    command: /opt/jboss/wildfly/bin/standalone.sh -b 0.0.0.0 -bmanagement 0.0.0.0
+    volumes:
+      - ./deployments:/opt/jboss/wildfly/standalone/deployments/

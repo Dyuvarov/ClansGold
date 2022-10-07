@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+/** JDBC implementation of UserAddGoldTransactionDAO */
 @ApplicationScoped
 @Log4j
 public class UserAddGoldTransactionDAOJdbc implements UserAddGoldTransactionDAO {

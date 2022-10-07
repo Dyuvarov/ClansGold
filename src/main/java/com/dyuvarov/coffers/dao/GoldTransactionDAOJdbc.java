@@ -1,7 +1,9 @@
 package com.dyuvarov.coffers.dao;
 
-import com.dyuvarov.coffers.GoldAction;
-import com.dyuvarov.coffers.TransactionStatus;
+import com.dyuvarov.coffers.type.GoldAction;
+import com.dyuvarov.coffers.type.TransactionStatus;
+import com.dyuvarov.coffers.dto.TaskDetailedGoldTransaction;
+import com.dyuvarov.coffers.dto.UserDetailedGoldTransaction;
 import com.dyuvarov.coffers.exception.EntitySaveException;
 import com.dyuvarov.coffers.model.GoldTransaction;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -15,6 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
+/** JDBC implementation of GoldTransactionDAO */
 @ApplicationScoped
 @Log4j
 public class GoldTransactionDAOJdbc implements GoldTransactionDAO{
@@ -22,9 +25,8 @@ public class GoldTransactionDAOJdbc implements GoldTransactionDAO{
     JdbcConnectionProvider connectionProvider;
 
     @Override
-    public Optional<GoldTransaction> findById(long id) {
-        String sql = "SELECT id, date, clan_id, action, gold_before, gold_change, status, error_description" +
-                " FROM coffers.transaction WHERE id=?";
+    public Optional<GoldTransaction> findById(long id, boolean detailed) {
+        String sql = detailed ? detailedSingleQuery() : notDetailedSingleQuery();
 
         GoldTransaction transaction = null;
         try (Connection connection = connectionProvider.getConnection()){
@@ -32,7 +34,7 @@ public class GoldTransactionDAOJdbc implements GoldTransactionDAO{
             ps.setLong(1, id);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                transaction = singleRowToGoldTransaction(rs);
+                transaction = singleRowToGoldTransaction(rs, detailed);
             }
         } catch (SQLException sqlException) {
             log.error("Bad 'findById' for transaction", sqlException);
@@ -41,26 +43,50 @@ public class GoldTransactionDAOJdbc implements GoldTransactionDAO{
         return Optional.ofNullable(transaction);
     }
 
-    @Override
-    public List<GoldTransaction> findByClanPageable(long clanId, int pageNumber, int pageSize) {
-        String sql = "SELECT id, date, clan_id, action, gold_before, gold_change, status, error_description " +
-                "FROM coffers.transaction " +
-                "WHERE id=?" +
-                "OFFSET ? LIMIT ?";
+    private String notDetailedSingleQuery() {
+        return "SELECT id, date, clan_id, action, gold_before, gold_change, status, error_description" +
+                " FROM coffers.transaction WHERE id=?";
+    }
 
-        List<GoldTransaction> transactions = Collections.emptyList();
+    private String detailedSingleQuery() {
+        return "SELECT t.id, t.date, t.clan_id, t.action, t.gold_before, t.gold_change, t.status, t.error_description, ut.user_id, tt.task_id " +
+                "FROM coffers.transaction t " +
+                "LEFT JOIN coffers.user_coffer_gold_transaction ut ON t.action='USER_ADD' AND ut.transaction_id=t.id " +
+                "LEFT JOIN coffers.task_coffer_gold_transaction tt ON t.action='TASK' AND tt.transaction_id=t.id " +
+                "WHERE t.id=?";
+    }
+
+    @Override
+    public List<? extends GoldTransaction> findAllPageable(int pageNumber, int pageSize, boolean detailed) {
+        String sql = detailed ? detailedListQuery() : notDetailedListQuery();
+        List<? extends GoldTransaction> transactions = Collections.emptyList();
         try (Connection connection = connectionProvider.getConnection()) {
             PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setLong(1, clanId);
-            ps.setInt(2, pageSize*pageNumber);
-            ps.setInt(3, pageSize);
+            ps.setInt(1, pageSize*pageNumber);
+            ps.setInt(2, pageSize);
             ResultSet rs = ps.executeQuery();
-            transactions = resultSetToList(rs);
+            transactions = resultSetToList(rs, detailed);
         } catch (SQLException sqlException) {
-            log.error("Bad 'findByClan' for transaction", sqlException);
+            log.error("Bad search for transaction", sqlException);
         }
 
         return transactions;
+    }
+
+    private String notDetailedListQuery() {
+        return "SELECT id, date, clan_id, action, gold_before, gold_change, status, error_description " +
+                "FROM coffers.transaction " +
+                "ORDER BY date DESC " +
+                "OFFSET ? LIMIT ?";
+    }
+
+    private String detailedListQuery() {
+        return "SELECT t.id, t.date, t.clan_id, t.action, t.gold_before, t.gold_change, t.status, t.error_description, ut.user_id,  tt.task_id " +
+                "FROM coffers.transaction t " +
+                "LEFT JOIN coffers.user_coffer_gold_transaction ut ON t.action='USER_ADD' AND ut.transaction_id=t.id " +
+                "LEFT JOIN coffers.task_coffer_gold_transaction tt ON t.action='TASK' AND tt.transaction_id=t.id " +
+                "ORDER BY date DESC " +
+                "OFFSET ? LIMIT ?";
     }
 
     @Override
@@ -100,18 +126,26 @@ public class GoldTransactionDAOJdbc implements GoldTransactionDAO{
     }
 
     @SneakyThrows
-    private List<GoldTransaction> resultSetToList(ResultSet rs) {
+    private List<? extends GoldTransaction> resultSetToList(ResultSet rs, boolean detailed) {
         List<GoldTransaction> transactions = new LinkedList<>();
         while (rs.next()) {
-            transactions.add(singleRowToGoldTransaction(rs));
+            transactions.add(singleRowToGoldTransaction(rs, detailed));;
         }
         return transactions;
     }
 
     @SneakyThrows
-    private GoldTransaction singleRowToGoldTransaction(ResultSet rs) {
-        GoldTransaction goldTransaction = new GoldTransaction();
+    private GoldTransaction singleRowToGoldTransaction(ResultSet rs, boolean detailed) {
+        GoldTransaction goldTransaction;
+        GoldAction action = GoldAction.valueOf(rs.getString("action"));
 
+        if (detailed && GoldAction.USER_ADD == action) {
+            goldTransaction = new UserDetailedGoldTransaction(rs.getLong("user_id"));
+        } else if (detailed && GoldAction.TASK == action) {
+            goldTransaction = new TaskDetailedGoldTransaction(rs.getLong("task_id"));
+        } else {
+            goldTransaction = new GoldTransaction();
+        }
         goldTransaction.setId(rs.getLong("id"));
         goldTransaction.setDate(rs.getTimestamp("date").toLocalDateTime());
         goldTransaction.setClanId(rs.getLong("clan_id"));

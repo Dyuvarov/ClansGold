@@ -12,7 +12,7 @@ import java.util.Optional;
 @Path("/clan")
 public class ClanResource {
     @Inject
-    ClanService clanService;
+    private ClanService clanService;
 
     @GET
     @Path("/{id}")

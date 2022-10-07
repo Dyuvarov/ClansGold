@@ -1,4 +1,4 @@
-package com.dyuvarov.coffers;
+package com.dyuvarov.coffers.type;
 
 public enum TransactionStatus {
     ACCEPTED,
